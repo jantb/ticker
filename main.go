@@ -5,31 +5,17 @@ import (
 	"fmt"
 
 	"github.com/getlantern/systray"
-	"github.com/getlantern/systray/example/icon"
 	"time"
 	"os"
+	"math"
 )
 
-
 func main() {
-	// Should be called at the very beginning of main().
 	systray.Run(onReady)
 }
 
 func onReady() {
-	systray.SetIcon(icon.Data)
-	systray.SetTitle("Awesome App")
-	systray.SetTooltip("Lantern")
-	mQuit := systray.AddMenuItem("Quit", "Quit the whole app")
 	go func() {
-		<-mQuit.ClickedCh
-		systray.Quit()
-		fmt.Println("Quit now...")
-	}()
-
-	// We can manipulate the systray in other goroutines
-	go func() {
-		systray.SetIcon(icon.Data)
 		systray.SetTitle("Ticker")
 
 		secret := os.Getenv("COINBASE_SECRET")
@@ -38,24 +24,133 @@ func onReady() {
 
 		client := exchange.NewClient(secret, key, passphrase)
 
-		for {
-			//
-			//accounts, err := client.GetAccounts()
-			//if err != nil {
-			//	println(err.Error())
-			//}
-			//
-			//for _, a := range accounts {
-			//	println(a.Currency)
-			//	println(a.Balance)
-			//}
-			ticker, err := client.GetTicker("ETH-EUR")
-			if err != nil {
-				println(err.Error())
+		accounts, err := client.GetAccounts()
+		if err != nil {
+			println(err.Error())
+		}
+		items := []*systray.MenuItem{}
+		for _, a := range accounts {
+			if a.Currency == "ETH" {
+				item := systray.AddMenuItem(fmt.Sprintf("%s %f", a.Currency, a.Balance), "")
+				item.Disable()
+				items = append(items, item)
 			}
-			fmt.Println(ticker.Ask)
-			systray.SetTitle(fmt.Sprint(ticker.Ask))
-			time.Sleep(60 * time.Second)
+			if a.Currency == "EUR" {
+				item := systray.AddMenuItem(fmt.Sprintf("%s %f", a.Currency, a.Balance), "")
+				item.Disable()
+				items = append(items, item)
+			}
+		}
+
+		mSell := systray.AddMenuItem("Sell all", "")
+		mBuy := systray.AddMenuItem("Buy all", "")
+		eth := 0.0
+		eur := 0.0
+
+		if err != nil {
+			println(err.Error())
+		}
+		for _, a := range accounts {
+			if a.Currency == "EUR" {
+				items[0].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Balance))
+				eur = a.Balance
+			}
+			if a.Currency == "ETH" {
+				items[1].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Balance))
+				eth = a.Balance
+			}
+		}
+		ticker, err := client.GetTicker("ETH-EUR")
+		if err != nil {
+			println(err.Error())
+		}
+		systray.SetTitle(fmt.Sprint(ticker.Ask))
+
+		for {
+
+			select {
+			case <-mSell.ClickedCh:
+				sell(client, eth)
+			case <-mBuy.ClickedCh:
+				buy(client, eur)
+			case <-time.After(30 * time.Second):
+				accounts, err := client.GetAccounts()
+				if err != nil {
+					println(err.Error())
+				}
+				for _, a := range accounts {
+					if a.Currency == "EUR" {
+						items[0].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Balance))
+						eur = a.Balance
+					}
+					if a.Currency == "ETH" {
+						items[1].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Balance))
+						eth = a.Balance
+					}
+				}
+				ticker, err := client.GetTicker("ETH-EUR")
+				if err != nil {
+					println(err.Error())
+				}
+				systray.SetTitle(fmt.Sprint(ticker.Ask))
+
+			}
+
 		}
 	}()
+}
+
+func buy(client *exchange.Client, fund float64) {
+
+	ticker, err := client.GetTicker("ETH-EUR")
+	if err != nil {
+		println(err.Error())
+	}
+
+	order := exchange.Order{
+		Price: Round(ticker.Bid + 0.01, .5, 2),
+		Size: Round((fund-3) /ticker.Bid,.5,4),
+		Side: "buy",
+		ProductId: "ETH-EUR",
+	}
+
+	_, err = client.CreateOrder(&order)
+	if err != nil {
+		println(err.Error())
+	}
+
+}
+
+func Round(val float64, roundOn float64, places int) (newVal float64) {
+	var round float64
+	pow := math.Pow(10, float64(places))
+	digit := pow * val
+	_, div := math.Modf(digit)
+	if div >= roundOn {
+		round = math.Ceil(digit)
+	} else {
+		round = math.Floor(digit)
+	}
+	newVal = round / pow
+	return
+}
+
+func sell(client *exchange.Client, fund float64) {
+
+	ticker, err := client.GetTicker("ETH-EUR")
+	if err != nil {
+		println(err.Error())
+	}
+
+	order := exchange.Order{
+		Price: Round(ticker.Ask - 0.01, .5, 2),
+		Size:  Round(fund, .5, 2),
+		Side: "sell",
+		ProductId: "ETH-EUR",
+	}
+	_, err = client.CreateOrder(&order)
+	if err != nil {
+		println(err.Error())
+	}
+
 }
