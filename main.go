@@ -77,6 +77,7 @@ func onReady() {
 				accounts, err := client.GetAccounts()
 				if err != nil {
 					println(err.Error())
+					continue
 				}
 				for _, a := range accounts {
 					if a.Currency == "EUR" {
@@ -91,6 +92,7 @@ func onReady() {
 				ticker, err := client.GetTicker("ETH-EUR")
 				if err != nil {
 					println(err.Error())
+					continue
 				}
 				systray.SetTitle(fmt.Sprint(ticker.Ask))
 
@@ -105,6 +107,7 @@ func buy(client *exchange.Client, fund float64) {
 	ticker, err := client.GetTicker("ETH-EUR")
 	if err != nil {
 		println(err.Error())
+		return
 	}
 
 	order := exchange.Order{
@@ -117,6 +120,7 @@ func buy(client *exchange.Client, fund float64) {
 	_, err = client.CreateOrder(&order)
 	if err != nil {
 		println(err.Error())
+		return
 	}
 
 }
