@@ -44,6 +44,8 @@ func onReady() {
 
 		mSell := systray.AddMenuItem("Sell all", "")
 		mBuy := systray.AddMenuItem("Buy all", "")
+		mTime := systray.AddMenuItem("Time", "")
+		mTime.Disable()
 		eth := 0.0
 		eur := 0.0
 
@@ -74,6 +76,7 @@ func onReady() {
 			case <-mBuy.ClickedCh:
 				buy(client, eur)
 			case <-time.After(30 * time.Second):
+
 				accounts, err := client.GetAccounts()
 				if err != nil {
 					println(err.Error())
@@ -95,6 +98,12 @@ func onReady() {
 					continue
 				}
 				systray.SetTitle(fmt.Sprint(ticker.Price))
+				t, err :=client.GetTime()
+				if err != nil {
+					println(err.Error())
+					continue
+				}
+				mTime.SetTitle(t.ISO +" "+ fmt.Sprint(ticker.Price))
 
 			}
 
