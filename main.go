@@ -46,6 +46,8 @@ func onReady() {
 		mBuy := systray.AddMenuItem("Buy all", "")
 		mTime := systray.AddMenuItem("Time", "")
 		mTime.Disable()
+		mBalanse := systray.AddMenuItem("Balance", "")
+		mBalanse.Disable()
 		eth := 0.0
 		eur := 0.0
 
@@ -104,7 +106,7 @@ func onReady() {
 					continue
 				}
 				mTime.SetTitle(t.ISO +" "+ fmt.Sprint(ticker.Price))
-
+				mBalanse.SetTitle(fmt.Sprint(eth*ticker.Price + eur ))
 			}
 
 		}
