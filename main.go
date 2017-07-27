@@ -52,11 +52,11 @@ func onReady() {
 		}
 		for _, a := range accounts {
 			if a.Currency == "EUR" {
-				items[0].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Balance))
+				items[0].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Available))
 				eur = a.Balance
 			}
 			if a.Currency == "ETH" {
-				items[1].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Balance))
+				items[1].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Available))
 				eth = a.Balance
 			}
 		}
@@ -64,7 +64,7 @@ func onReady() {
 		if err != nil {
 			println(err.Error())
 		}
-		systray.SetTitle(fmt.Sprint(ticker.Ask))
+		systray.SetTitle(fmt.Sprint(ticker.Price))
 
 		for {
 
@@ -81,11 +81,11 @@ func onReady() {
 				}
 				for _, a := range accounts {
 					if a.Currency == "EUR" {
-						items[0].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Balance))
+						items[0].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Available))
 						eur = a.Balance
 					}
 					if a.Currency == "ETH" {
-						items[1].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Balance))
+						items[1].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Available))
 						eth = a.Balance
 					}
 				}
@@ -94,7 +94,7 @@ func onReady() {
 					println(err.Error())
 					continue
 				}
-				systray.SetTitle(fmt.Sprint(ticker.Ask))
+				systray.SetTitle(fmt.Sprint(ticker.Price))
 
 			}
 
