@@ -34,11 +34,33 @@ func onReady() {
 				item := systray.AddMenuItem(fmt.Sprintf("%s %f", a.Currency, a.Balance), "")
 				item.Disable()
 				items = append(items, item)
+				item2 := systray.AddMenuItem(fmt.Sprintf("%s %f", a.Currency, a.Balance), "")
+				item2.Disable()
+				items = append(items, item2)
 			}
 			if a.Currency == "EUR" {
 				item := systray.AddMenuItem(fmt.Sprintf("%s %f", a.Currency, a.Balance), "")
 				item.Disable()
 				items = append(items, item)
+				item2 := systray.AddMenuItem(fmt.Sprintf("%s %f", a.Currency, a.Balance), "")
+				item2.Disable()
+				items = append(items, item2)
+			}
+			if a.Currency == "BTC" {
+				item := systray.AddMenuItem(fmt.Sprintf("%s %f", a.Currency, a.Balance), "")
+				item.Disable()
+				items = append(items, item)
+				item2 := systray.AddMenuItem(fmt.Sprintf("%s %f", a.Currency, a.Balance), "")
+				item2.Disable()
+				items = append(items, item2)
+			}
+			if a.Currency == "LTC" {
+				item := systray.AddMenuItem(fmt.Sprintf("%s %f", a.Currency, a.Balance), "")
+				item.Disable()
+				items = append(items, item)
+				item2 := systray.AddMenuItem(fmt.Sprintf("%s %f", a.Currency, a.Balance), "")
+				item2.Disable()
+				items = append(items, item2)
 			}
 		}
 
@@ -50,19 +72,11 @@ func onReady() {
 		mBalanse.Disable()
 		eth := 0.0
 		eur := 0.0
+		btc := 0.0
+		ltc := 0.0
 
 		if err != nil {
 			println(err.Error())
-		}
-		for _, a := range accounts {
-			if a.Currency == "EUR" {
-				items[0].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Available))
-				eur = a.Balance
-			}
-			if a.Currency == "ETH" {
-				items[1].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Available))
-				eth = a.Balance
-			}
 		}
 		ticker, err := client.GetTicker("ETH-EUR")
 		if err != nil {
@@ -87,26 +101,51 @@ func onReady() {
 				for _, a := range accounts {
 					if a.Currency == "EUR" {
 						items[0].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Available))
+						items[1].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Hold))
 						eur = a.Balance
 					}
 					if a.Currency == "ETH" {
-						items[1].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Available))
+						items[2].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Available))
+						items[3].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Hold))
 						eth = a.Balance
 					}
+					if a.Currency == "BTC" {
+						items[4].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Available))
+						items[5].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Hold))
+						btc = a.Balance
+					}
+					if a.Currency == "LTC" {
+						items[6].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Available))
+						items[7].SetTitle(fmt.Sprintf("%s %f", a.Currency, a.Hold))
+						ltc = a.Balance
+					}
 				}
-				ticker, err := client.GetTicker("ETH-EUR")
+				btcTicker, err := client.GetTicker("BTC-EUR")
 				if err != nil {
 					println(err.Error())
 					continue
 				}
-				systray.SetTitle(fmt.Sprint(ticker.Price))
+
+				ltcTicker, err := client.GetTicker("LTC-EUR")
+				if err != nil {
+					println(err.Error())
+					continue
+				}
+
+				ethTicker, err := client.GetTicker("ETH-EUR")
+				if err != nil {
+					println(err.Error())
+					continue
+				}
+
+				systray.SetTitle(fmt.Sprint(eth*ethTicker.Price + btc*btcTicker.Price + ltc*ltcTicker.Price + eur ))
 				t, err :=client.GetTime()
 				if err != nil {
 					println(err.Error())
 					continue
 				}
-				mTime.SetTitle(t.ISO +" "+ fmt.Sprint(ticker.Price))
-				mBalanse.SetTitle(fmt.Sprint(eth*ticker.Price + eur ))
+				mTime.SetTitle(t.ISO)
+				mBalanse.SetTitle(fmt.Sprint(eth*ethTicker.Price + btc*btcTicker.Price + ltc*ltcTicker.Price + eur ))
 			}
 
 		}
