@@ -76,6 +76,8 @@ func onReady() {
 		//mBuy := systray.AddMenuItem("Buy all", "")
 		mTime := systray.AddMenuItem("Time", "")
 		mTime.Disable()
+		bal := systray.AddMenuItem("Bal", "")
+		bal.Disable()
 		mBalanse := systray.AddMenuItem("Balance", "")
 		mBalanse.Disable()
 
@@ -105,6 +107,7 @@ func onReady() {
 			println(err.Error())
 		}
 		systray.SetTitle(fmt.Sprint(ticker.Price))
+		bal.SetTitle(fmt.Sprint(ticker.Price))
 		changedBalanceEur := 0.0
 		changedBalanceBtc := 0.0
 		for {
@@ -184,7 +187,10 @@ func onReady() {
 					continue
 				}
 				mTime.SetTitle(t.ISO)
-				systray.SetTitle(fmt.Sprint(fmt.Sprint((changedBalanceEur + changedBalanceBtc)/2))+ "%")
+				res := fmt.Sprint(fmt.Sprint(Round((changedBalanceEur+changedBalanceBtc)/2, .5, 4)) + "%")
+
+				systray.SetTitle(res)
+				bal.SetTitle(res)
 			}
 
 		}
